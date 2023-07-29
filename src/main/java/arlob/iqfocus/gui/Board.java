@@ -1,13 +1,12 @@
-package comp1110.ass2.gui;
+package arlob.iqfocus.gui;
 
-import comp1110.ass2.FocusGame;
-import comp1110.ass2.Solution;
+import arlob.iqfocus.FocusGame;
+import arlob.iqfocus.Solution;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -18,7 +17,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 import java.util.HashMap;
@@ -32,8 +30,9 @@ public class Board extends Application {
     private static final int GAME_HEIGHT = 700;
     private static final int SQUARE_SIZE = 60;
 
-    private static final String BASEBOARD_URI = Board.class.getResource("assets/lite-1.png").toString();
 
+
+    private final String BASEBOARD_URI = getClass().getClassLoader().getResource("lite-1.png").toString();
 
     private static final int MARGIN_X = 30;
     private static final int MARGIN_Y = 30;
@@ -157,7 +156,7 @@ public class Board extends Application {
             if(type > 'j' || type < 'a') { throw new IllegalArgumentException("Bad tile: \"" + type + "\""); }
 
             this.tileID = type - 'a';
-            Image img = new Image(Board.class.getResource("assets/" + type + ".png").toString());
+            Image img = new Image(getClass().getClassLoader().getResource(type + ".png").toString());
             setImage(img);
 
             setFitHeight(img.getHeight() * 0.6);
@@ -282,8 +281,7 @@ public class Board extends Application {
 
             PlaceString a = new PlaceString(ps);
             a.updateString(s);
-
-            if(!FocusGame.isPlacementStringValid(a.toString())) {
+            if(!a.toString().equals("") && !FocusGame.isPlacementStringValid(a.toString())) {
                 returnHome();
                 showWarning();
             } else {
@@ -393,7 +391,7 @@ public class Board extends Application {
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 ImageView img = new ImageView();
-                img.setImage(new Image(Board.class.getResource("assets/sq-" + Character.toLowerCase(challenge.toCharArray()[(i*3) + j]) + ".png").toString()));
+                img.setImage(new Image(getClass().getClassLoader().getResource("sq-" + Character.toLowerCase(challenge.toCharArray()[(i*3) + j]) + ".png").toString()));
                 img.setLayoutX(x);
                 img.setLayoutY(y);
                 img.setFitHeight(img.getImage().getHeight() * 0.6);
@@ -552,5 +550,9 @@ public class Board extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

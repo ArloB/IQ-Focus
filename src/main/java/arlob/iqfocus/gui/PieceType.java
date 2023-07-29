@@ -1,6 +1,4 @@
-package comp1110.ass2.gui;
-
-import comp1110.ass2.gui.State.*;
+package arlob.iqfocus.gui;
 
 public enum PieceType {
     A, B, C, D, E, F, G, H, I,J;

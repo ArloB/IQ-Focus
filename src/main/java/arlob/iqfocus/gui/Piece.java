@@ -1,5 +1,6 @@
-package comp1110.ass2.gui;
-import static comp1110.ass2.gui.State.*;
+package arlob.iqfocus.gui;
+import static arlob.iqfocus.gui.State.*;
+
 public class Piece {
     private PieceType pieceType;
     private Orientation orientation;

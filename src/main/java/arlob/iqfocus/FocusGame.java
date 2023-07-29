@@ -1,9 +1,9 @@
-package comp1110.ass2;
+package arlob.iqfocus;
 
-import comp1110.ass2.gui.Orientation;
-import comp1110.ass2.gui.Piece;
-import comp1110.ass2.gui.PieceType;
-import comp1110.ass2.gui.State;
+import arlob.iqfocus.gui.Orientation;
+import arlob.iqfocus.gui.Piece;
+import arlob.iqfocus.gui.PieceType;
+import arlob.iqfocus.gui.State;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,13 +16,9 @@ import java.util.Set;
  * (https://www.smartgames.eu/uk/one-player-games/iq-focus)
  */
 public class FocusGame {
-    private static State[][] board=new State[9][5];
+    private final static State[][] board = new State[9][5];
     String placement;
-    FocusGame(){
 
-
-
-    }
     /**
      * Determine whether a piece placement is well-formed according to the
      * following criteria:
@@ -365,22 +361,7 @@ public class FocusGame {
             return true;
         }
 
-    /**
-     * Return the canonical encoding of the solution to a particular challenge.
-     *
-     * A given challenge can only solved with a single placement of pieces.
-     *
-     * Since so  me piece placements can be described two ways (due to symmetry),
-     * you need to use a canonical encoding of the placement, which means you
-     * must:
-     * - Order the placement sequence by piece IDs
-     * - If a piece exhibits rotational symmetry, only return the lowest
-     *   orientation value (0 or 1)
-     *
-     * @param A challenge string.
-     * @return A placement string describing a canonical encoding of the solution to
-     * the challenge.
-     */
+
 
 
     static State[][] updateBoard(String placement,State[][] board){
@@ -447,6 +428,22 @@ public class FocusGame {
         return false;
     }
 
+    /**
+     * Return the canonical encoding of the solution to a particular challenge.
+     *
+     * A given challenge can only be solved with a single placement of pieces.
+     *
+     * Since so  me piece placements can be described two ways (due to symmetry),
+     * you need to use a canonical encoding of the placement, which means you
+     * must:
+     * - Order the placement sequence by piece IDs
+     * - If a piece exhibits rotational symmetry, only return the lowest
+     *   orientation value (0 or 1)
+     *
+     * @param challenge A challenge string.
+     * @return A placement string describing a canonical encoding of the solution to
+     * the challenge.
+     */
     public static String getSolution(String challenge) {
         // FIXME Task 9: determine the solution to the game, given a particular challenge
         String placement="";

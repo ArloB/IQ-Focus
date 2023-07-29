@@ -1,4 +1,4 @@
-package comp1110.ass2;
+package arlob.iqfocus;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,7 +1,7 @@
-package comp1110.ass2;
+package arlob.iqfocus;
 
-import comp1110.ass2.gui.Orientation;
-import comp1110.ass2.gui.Piece;
+import arlob.iqfocus.gui.Orientation;
+import arlob.iqfocus.gui.Piece;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

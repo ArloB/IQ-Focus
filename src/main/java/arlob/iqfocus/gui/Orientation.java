@@ -1,4 +1,4 @@
-package comp1110.ass2.gui;
+package arlob.iqfocus.gui;
 
 public enum  Orientation {
     ZERO,ONE,TWO,THREE;

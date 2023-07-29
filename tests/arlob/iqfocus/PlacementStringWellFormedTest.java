@@ -1,11 +1,11 @@
-package comp1110.ass2;
+package arlob.iqfocus;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import static comp1110.ass2.Solution.SOLUTIONS;
-import static comp1110.ass2.TestUtility.BAD_PIECES;
+import static arlob.iqfocus.Solution.SOLUTIONS;
+import static arlob.iqfocus.TestUtility.BAD_PIECES;
 import static org.junit.Assert.assertTrue;
 
 

@@ -1,6 +1,5 @@
-package comp1110.ass2.gui;
+package arlob.iqfocus.gui;
 
-import comp1110.ass2.FocusGame;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
