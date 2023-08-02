@@ -1,19 +1,14 @@
 package arlob.iqfocus.gui;
 
 public enum  Orientation {
-    ZERO,ONE,TWO,THREE;
-    //use number to represent orientation
+    ZERO, ONE, TWO, THREE;
 
     public char toChar(){
-        switch (this) {
-            case ONE:
-                return '1';
-            case TWO:
-                return '2';
-            case THREE:
-                return '3';
-            default:
-                return '0';
-        }
+        return switch (this) {
+            case ONE -> '1';
+            case TWO -> '2';
+            case THREE -> '3';
+            default -> '0';
+        };
     }
 }

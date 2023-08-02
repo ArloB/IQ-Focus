@@ -306,21 +306,15 @@ public class Board extends Application {
             setRotate(orientation * 90);
 
             switch (type) {
-                case 'b':
-                case 'c':
-                case 'j':
+                case 'b', 'c', 'j' -> {
                     mod = 60;
                     mov = 60;
-                    break;
-                case 'f':
-                    mod = 60;
-                    break;
-                case 'a':
-                case 'd':
-                case 'e':
-                case 'g':
+                }
+                case 'f' -> mod = 60;
+                case 'a', 'd', 'e', 'g' -> {
                     mod = 30;
                     mov = 30;
+                }
             }
 
             if (orientation % 2 != 0) {

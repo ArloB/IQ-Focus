@@ -1,8 +1,8 @@
 package arlob.iqfocus;
 
+import arlob.iqfocus.gui.Location;
 import arlob.iqfocus.gui.Orientation;
 import arlob.iqfocus.gui.Piece;
-import arlob.iqfocus.gui.PieceType;
 import arlob.iqfocus.gui.State;
 
 import java.util.Arrays;
@@ -16,9 +16,6 @@ import java.util.Set;
  * (https://www.smartgames.eu/uk/one-player-games/iq-focus)
  */
 public class FocusGame {
-    private final static State[][] board = new State[9][5];
-    String placement;
-
     /**
      * Determine whether a piece placement is well-formed according to the
      * following criteria:
@@ -32,25 +29,20 @@ public class FocusGame {
      * @return True if the piece placement is well-formed
      */
     static boolean isPiecePlacementWellFormed(String piecePlacement) {
-
-        boolean out = false;
-
-        if (piecePlacement.length() == 4){
-            char firstChar = piecePlacement.charAt(0);
-            int secInt = Character.getNumericValue(piecePlacement.charAt(1));
-            int thirdInt = Character.getNumericValue(piecePlacement.charAt(2));
-            int fourthInt = Character.getNumericValue(piecePlacement.charAt(3));
-
-            if ((firstChar >= 'a'&& firstChar <= 'j')
-                && (secInt >=0 && secInt <= 8)
-                && (thirdInt >=0 && thirdInt <= 4)
-                && (fourthInt >=0 && fourthInt <= 3))
-            { out = true; }
+        if (piecePlacement.length() != 4) {
+            return false;
         }
+        
+        char shape = piecePlacement.charAt(0);
+        char col = piecePlacement.charAt(1);
+        char row = piecePlacement.charAt(2);
+        char ori = piecePlacement.charAt(3);
 
-        return out;
+        return shape >= 'a' && shape <= 'j'
+                && col >= '0' && col <= '8'
+                && row >= '0' && row <= '4'
+                && ori >= '0' && ori <= '3';
     }
-
 
     /**
      * Determine whether a placement string is well-formed:
@@ -62,39 +54,22 @@ public class FocusGame {
      * @return True if the placement is well-formed
      */
     public static boolean isPlacementStringWellFormed(String placement) {
-        /*
-        int n=placement.length();
-        boolean[] a=new boolean[10]; //boolean default false; mark array with num(represent the first char of substring)
+        if (placement.length() % 4 == 0 && placement.length() > 0 && placement.length() / 4 < 11) {
+            Set<Character> shapes = new HashSet<>();
 
-        if(n<1||n>40||n%4!=0) return false; // s ="", n=0 false
+            for (int i = 0; i < placement.length(); i += 4) {
+                String piece = placement.substring(i, i+4);
 
-        for(int i=0;i<n;i=i+4){
-            String s=placement.substring(i,i+4);
-            if(!isPiecePlacementWellFormed(s)) return false;
-            int j=s.charAt(0)-'a'; //char starts from a ASCII , 'a' -'a'=0
-            if(a[j]==true) return false;
-            else a[j]=true;
-        }
-        return true; */
-
-
-
-        int count = 0;
-        String[] a = placement.split("(?<=\\G.{4})"); // https://stackoverflow.com/a/3761521
-
-        if(a.length < 11 && a.length != 0) {
-            for (int i = 0; i < a.length; i++) {
-                if (isPiecePlacementWellFormed(a[i])) {
-                    int finalI = i;
-                    count += (Arrays.stream(a).filter(x -> x.charAt(0) == a[finalI].charAt(0)).count() < 2 ? 1 : 0); // https://stackoverflow.com/a/1128728
+                if (! isPiecePlacementWellFormed(piece) || !shapes.add(piece.charAt(0))) {
+                    return false;
                 }
             }
+        
+            return true;
         }
-
-        return count == a.length;
+        
+        return false;
     }
-
-
 
     /**
      * Determine whether a placement string is valid.
@@ -109,62 +84,40 @@ public class FocusGame {
      * @param placement A placement string
      * @return True if the placement sequence is valid
      */
-
-
-
     public static boolean isPlacementStringValid(String placement) {
-        // FIXME Task 5: determine whether a placement string is valid
-
         if(!isPlacementStringWellFormed(placement))
             return false;
+        
+        State[][] board = new State[9][5];
 
-        State[][] boardcopy=new State[9][5];
+        for (int i = 0; i < placement.length(); i += 4) {
+            Piece piece = new Piece(placement.substring(i,i+4));
+            Location location = piece.getLocation();
 
-        int l=placement.length();
-        for(int i=0;i<l;i+=4){
-
-            String string = placement.substring(i,i+4);
-            Piece piece=new Piece(string);
-            PieceType pieceType=piece.getPieceType();
-            int x=piece.getLocation().getX();
-            int y=piece.getLocation().getY();
-            int w=piece.getW();
-            int h=piece.getH();
-            State[] states=piece.getStates();
-            Orientation ori=piece.getOrientation();
-            if(ori==Orientation.ONE||ori==Orientation.THREE){
-               int temp=w;
-               w=h;
-               h=temp;
+            if (location.X + piece.getW() > 9 || location.Y + piece.getH() > 5 || location.X < 0 || location.Y < 0) {
+                return false;
             }
 
-            if(x+w>9||y+h>5||x<0||y<0) {
-                return false;}
+            for (int y = 0; y < piece.getH(); y++) {
+                for (int x = 0; x < piece.getW(); x++) {
+                    int X = location.X + x;
+                    int Y = location.Y + y;
+                    State state = piece.getState(x, y);
+                    
+                    if (state != State.EMPTY && ((X == 0 && Y == 4) || (X == 8 && Y == 4))) {
+                        return false;
+                    }
 
-            for(int yoff=0;yoff<h;yoff++){
-                for(int xoff=0;xoff<w;xoff++){
-                    int xx=x+xoff;
-                    int yy=y+yoff;
-                    State state= pieceType.stateFromOffset(xoff,yoff,piece.getH(),piece.getW(),states,ori);
-                    if((xx==0&&yy==4)||(xx==8&&yy==4)) {   // left and right corner
-                        if(state!=State.EMPTY) return false;}
-                    if(boardcopy[xx][yy]==null||boardcopy[xx][yy]==State.EMPTY) {
-                        //System.out.println("this is"+" "+(x+xoff)+" "+(y+yoff)+" "+boardcopy[x+xoff][y+yoff]);
-                        boardcopy[xx][yy]=state;
-                        //System.out.println("NOW "+(x+xoff)+" "+(y+yoff)+" "+boardcopy[x+xoff][y+yoff]);
-                        }
-
-                    else if(state==State.EMPTY) continue;
-                    else {
-                        return false;}
+                    if (board[X][Y] == null || board[X][Y] == State.EMPTY) {
+                        board[X][Y] = state;
+                    } else if (state != State.EMPTY) {
+                        return false;
+                    }
                 }
             }
         }
+
         return true;
-    }
-
-    private void updateBoardStates(Piece piece) {
-
     }
 
     /**
@@ -192,240 +145,67 @@ public class FocusGame {
      * @param row      The location's row.
      * @return A set of viable piece placements, or null if there are none.
      */
+    public static Set<String> getViablePiecePlacements(String placement, String challenge, int col, int row) {
+        Set<Character> unplacedShapes = new HashSet<>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'));
+        
+        State[][] board = new State[9][5];
+        
+        for (int i = 0; i < placement.length(); i += 4) {
+            Piece piece = new Piece(placement.substring(i, i+4));
+            
+            unplacedShapes.remove(Character.toLowerCase(placement.charAt(i)));
 
-
-
-
-
-        public static Set<String> getViablePiecePlacements(String placement, String challenge, int col, int row) {
-            // FIXME Task 6: determine the set of all viable piece placements given existing placements and a challenge
-            State[][] board=new State[9][5];
-
-            Set<String> viable_placements= new HashSet<>();
-
-            char[] pi_type={'a','b','c','d','e','f','g','h','i','j'};
-            int l=placement.length();
-            for(int i=0;i<l;i+=4){                           //  update board with a piece in string placement
-                String string = placement.substring(i,i+4);
-                char pi=string.charAt(0);
-                for(int j=0;j<10;j++){
-                    if(pi_type[j]==pi) pi_type[j]=' ';    // update pieces which have been used to be ' '
-                }
-                Piece piece = new Piece(string);
-                State[] states=piece.getStates();
-                int h=piece.getH();
-                int w=piece.getW();
-                PieceType pieceType=piece.getPieceType();
-                int x=piece.getLocation().getX();
-                int y=piece.getLocation().getY();
-                Orientation ori=piece.getOrientation();
-
-                int ww = w,hh= h;
-                if(ori==Orientation.ONE||ori==Orientation.THREE){
-                    ww = h; hh= w;
-                }
-
-                for(int xf=0;xf<ww;xf++){
-                    for(int yf=0;yf<hh;yf++){
-                        State state= pieceType.stateFromOffset(xf,yf,piece.getH(),piece.getW(),states,ori);
-                        if(state!=State.EMPTY){
-                            board[x+xf][y+yf]=state;
-                        }
-                    }
+            for (int y = 0; y < piece.getH(); y++) {
+                for (int x = 0; x < piece.getW(); x++) {
+                    board[piece.getLocation().X + x][piece.getLocation().Y + y] = piece.getState(x, y);
                 }
             }
+        }
 
+        Set<String> viablePlacements = new HashSet<>();
 
-            // new pieces  the usable pieces
-            State[][] cha=new State[9][5];
-            Piece[] pieces;
-            for(int k=0;k<10;k++){
-                if(pi_type[k]!=' '){
+        for (char shape : unplacedShapes) {
+            for (Orientation orientation : Orientation.values()) {
+                Piece piece = new Piece(shape, col, row, orientation);
+                int h = piece.getH(), w = piece.getW();
 
-                    String piecestring=pi_type[k]+"000";
-                    Piece piece=new Piece(piecestring);
-                    PieceType pieceType=piece.getPieceType();
-                    State[] states=piece.getStates();
+                for (int i = Math.max(row - h, 0); i <= Math.min(row + h, 4); i++) {
+                    for (int j = Math.max(col - h, 0); j <= Math.min(col + w, 8); j++) {
+                        if ((j == 0 && i == 4) || (j == 8 && i == 4) || j + w > 9 || i + h > 5 || j < 0 || i < 0 || !isPiecePlacementWellFormed(piece.toString())) continue;
 
-                    int w=piece.getW();
-                    int h=piece.getH();
-                    for (int ori=0;ori<4;ori++){
+                        if ((j + w > 2 || j - w < 6) && (i + h > 0 || i - h < 4)) {
+                            boolean covers = false, valid = true;
+                            
+                            piece.setLocation(j, i);
 
+                            for (int y = 0; y < h; y++) {
+                                for (int x = 0; x < w; x++) {
+                                    char colour = piece.getState(x, y).toChar();
 
+                                    int X = j + x, Y = i + y;
 
-                        piece.setOrientation(ori);
-                        Orientation orientation=piece.getOrientation();
-                        int ww = w,hh= h;
-                        if(ori%2!=0){
-                           ww = h;  hh = w;
-                        }
-                        for(int xf=0;xf<ww;xf++){
-                            for(int yf=0;yf<hh;yf++){
-                                State state= pieceType.stateFromOffset(xf,yf,h,w,states,orientation);
-                                if(state==State.EMPTY) continue;
-                                int x=col-xf;
-                                int y=row-yf;
-                                if(pi_type[k]=='e'&&x==3&&y==2&&ori==3){
-                                    int sss=0;
+                                    if (colour == 'E') continue;
+
+                                    covers |= (X == col && Y == row);
+
+                                    if ((board[X][Y] != null && board[X][Y] != State.EMPTY) || (X == 0 && Y == 4) || (X == 8 && Y == 4) || ((X > 2 && X < 6 && Y > 0 && Y < 4) && (challenge.charAt((X - 3) + (Y - 1) * 3) != colour))) {
+                                        valid = false; break;
+                                    }
                                 }
-                                piece.setLocation(x,y);
-                                // check challenge
-                                if (isPieceValid(board,piece,challenge)) {
-                                    String viable_string=Character.toString(pi_type[k])+x+y+ori;
-                                    viable_placements.add(viable_string);
-                                    //System.out.println("valid"+viable_string);
-                                }
-                                else {
-                                   // System.out.println("invalid "+pi_type[k]+" "+x+" "+y+""+ori);
-                                    continue;}
+
+                                if (!valid) break;
+                            }
+                        
+                            if (covers && valid) {
+                                viablePlacements.add(piece.toString());
                             }
                         }
                     }
                 }
             }
-            if (viable_placements.size()!=0) return viable_placements;
-            else  return null;
         }
 
-
-
-        public static boolean isPieceValid(State[][] board,Piece piece,String challenge){
-            // update board with new piece!!
-            State[][] boardcopy=new State[9][5];
-            for(int i=0;i<9;i++){
-                for(int j=0;j<5;j++){
-                    boardcopy[i][j]=board[i][j]; // should initialize the boardcopy to the original one after being put a piece on it
-                }
-            }
-            State[] states=piece.getStates();
-            int h=piece.getH();
-            int w=piece.getW();
-            PieceType pieceType=piece.getPieceType();
-            int x=piece.getLocation().getX();
-            int y=piece.getLocation().getY();
-            Orientation ori=piece.getOrientation();
-
-            int ww = w,hh= h;
-            if(ori==Orientation.ONE||ori==Orientation.THREE){
-                ww = h; hh= w;
-            }
-
-            if(x+ww>9||y+hh>5||x<0||y<0) {
-                return false;}
-
-            for(int xf=0;xf<ww;xf++){
-                for(int yf=0;yf<hh;yf++){
-                    State state= pieceType.stateFromOffset(xf,yf,piece.getH(),piece.getW(),states,ori);
-                    int xx=x+xf;
-                    int yy=y+yf;
-                    if((xx==0&&yy==4)||(xx==8&&yy==4)) {   // left and right corner
-                        if(state!=State.EMPTY) return false;}
-
-
-                    if(boardcopy[xx][yy]==null||boardcopy[xx][yy]==State.EMPTY){
-                        boardcopy[xx][yy]=state;
-                    }
-                    else if(state==State.EMPTY) continue;
-                    else return false;
-                }
-            }
-
-            // check the challenge
-            State[] state_challenge=new State[9]; // the target challenge
-            State[] cha_on_board=new State[9];   // the current state of the challenge on board
-            int k=0;
-            for(int r=1;r<=3;r++){
-                for (int c=3;c<=5;c++){
-                    cha_on_board[k]=boardcopy[c][r];
-                    k++;
-                }
-            }
-
-            for (k=0;k<=8;k++){
-                if(challenge.charAt(k)=='R') state_challenge[k]=State.RED;
-                else if(challenge.charAt(k)=='B') state_challenge[k]=State.BLUE;
-                else if(challenge.charAt(k)=='W') state_challenge[k]=State.WHITE;
-                else state_challenge[k]=State.GREEN;
-            }
-
-            for (k=0;k<=8;k++){
-                if(cha_on_board[k]==null||cha_on_board[k]==State.EMPTY) continue;
-                else if (cha_on_board[k]==state_challenge[k]) continue;
-                else return false;
-            }
-
-            if(pieceType==PieceType.E&&x==3&&y==2&&ori==Orientation.THREE){
-                System.out.println("");
-            }
-
-            return true;
-        }
-
-
-
-
-    static State[][] updateBoard(String placement,State[][] board){
-        int length=placement.length();
-        if(length==0) return board;
-        for(int i=0;i<length;i+=4){                           //  update board with a piece in string placement
-            String string = placement.substring(i,i+4);
-            Piece piece = new Piece(string);
-            State[] states=piece.getStates();
-            int h=piece.getH();
-            int w=piece.getW();
-            PieceType pieceType=piece.getPieceType();
-            int x=piece.getLocation().getX();
-            int y=piece.getLocation().getY();
-            Orientation ori=piece.getOrientation();
-
-            int ww = w,hh= h;
-            if(ori==Orientation.ONE||ori==Orientation.THREE){
-                ww = h; hh= w;
-            }
-
-            for(int xf=0;xf<ww;xf++){
-                for(int yf=0;yf<hh;yf++){
-                    State state= pieceType.stateFromOffset(xf,yf,piece.getH(),piece.getW(),states,ori);
-                    if(state!=State.EMPTY){
-                        board[x+xf][y+yf]=state;
-                    }
-                }
-            }
-        }
-
-        return board;
-    }
-
-
-    public static Boolean solution(StringBuffer placement,String challenge){
-        if (placement.length()==10) return true;
-        else {
-            State[][] boardstate=new State[9][5];
-
-            boardstate=updateBoard(placement.toString(),boardstate);
-            Set<String> viableplacements=new HashSet<>();
-            for(int i =0;i<9;i++){
-                for(int j=0;j<5;j++){
-                    if(boardstate[i][j]==null||boardstate[i][j]==State.EMPTY){
-                        viableplacements=getViablePiecePlacements(placement.toString(),challenge,i,j);
-                        if(viableplacements==null) continue; //
-                        else{
-                            for(String new_placement : viableplacements){
-                                StringBuffer old_placement=placement;
-                                placement.append(new_placement);
-                                if(!solution(placement,challenge))
-                                    placement=old_placement;
-                                else{
-                                    solution(placement,challenge);
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return viablePlacements.size() == 0 ? null : viablePlacements;
     }
 
     /**
@@ -445,33 +225,8 @@ public class FocusGame {
      * the challenge.
      */
     public static String getSolution(String challenge) {
-        // FIXME Task 9: determine the solution to the game, given a particular challenge
-        String placement="";
-        StringBuffer pl=new StringBuffer(placement);
-        int col;
-        int row;
-        State[][] board=new State[9][5];
-        State[][] copyboard=new State[9][5];
-        Set<String> viableplacements=new HashSet<>();
-        solution(pl,challenge);
-        return pl.toString();
 
 
-        /*
-        for(int i=3;i<=5;i++){
-            for (int j=1;j<=3;j++){
-                if(board[i][j]==null||board[i][j]==State.EMPTY){
-                    viableplacements=getViablePiecePlacements(placement, challenge,i,j);
-                    for (String vp:viableplacements){
-                        placement=placement+vp;
-
-                    }
-                }
-            }
-        }
-*/
-
+        return "";
     }
-
-
 }

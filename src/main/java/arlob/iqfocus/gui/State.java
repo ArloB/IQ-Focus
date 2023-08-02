@@ -6,4 +6,14 @@ public enum State {
     BLUE,
     WHITE,
     EMPTY;
+
+    public char toChar(){
+        return switch (this) {
+            case RED -> 'R';
+            case GREEN -> 'G';
+            case BLUE -> 'B';
+            case WHITE -> 'W';
+            default -> 'E';
+        };
+    }
 }

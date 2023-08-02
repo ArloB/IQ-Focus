@@ -12,20 +12,7 @@ public class stateFromOffset {
 
     public void test(String in, int xf, int yf, State state_ex) {
         Piece piece=new Piece(in);
-        PieceType pieceType=piece.getPieceType();
-        int w=piece.getW();
-        int h=piece.getH();
-        State[] states=piece.getStates();
-        Orientation ori=piece.getOrientation();
-        int orientation=in.charAt(3);
-        if(orientation%2!=0) {
-            int temp=w;
-            w=h;
-            h=temp;
-        }
-        State state_out = pieceType.stateFromOffset(xf,yf,w,h, states, ori);
-        System.out.println("state is "+state_out);
-        System.out.println("ori is "+ori);
+        State state_out = piece.getState(xf,yf);
         assertTrue("Input was '" + in + "', expected " + state_ex + " but got " + state_out, state_out == state_ex);
     }
     @Test
