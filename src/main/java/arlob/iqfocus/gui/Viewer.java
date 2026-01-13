@@ -13,6 +13,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import arlob.iqfocus.FocusGame;
+
 /**
  * A very simple viewer for piece placements in the IQ-Focus game.
  * <p>
@@ -21,13 +23,10 @@ import javafx.stage.Stage;
  * placements.
  */
 public class Viewer extends Application {
-
     /* board layout */
     private static final int SQUARE_SIZE = 60;
     private static final int VIEWER_WIDTH = 720;
     private static final int VIEWER_HEIGHT = 480;
-
-    private static final String URI_BASE = "assets/";
 
     private final Group root = new Group();
     private final Group controls = new Group();
@@ -40,6 +39,8 @@ public class Viewer extends Application {
      * @param placement A valid placement string
      */
     void makePlacement(String placement) {
+        placement = placement.replaceAll("[, ]", "");
+
         tiles.getChildren().clear();
         int n = placement.length();
 
@@ -52,7 +53,7 @@ public class Viewer extends Application {
             int ori = Character.getNumericValue(piece.charAt(3));
 
             ImageView imgView = new ImageView(); //https://docs.oracle.com/javase/8/javafx/api/index.html?javafx/scene/image/ImageView.html
-            Image img = new Image(getClass().getResource(URI_BASE + piece.charAt(0) + ".png").toString());
+            Image img = new Image(getClass().getClassLoader().getResource(piece.charAt(0) + ".png").toString());
 
 
             double height = img.getHeight() * pixelSize;
@@ -113,5 +114,9 @@ public class Viewer extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

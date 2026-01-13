@@ -8,9 +8,8 @@ import static arlob.iqfocus.Solution.SOLUTIONS;
 import static org.junit.Assert.assertTrue;
 
 public class PiecePlacementWellFormedTest {
-    // Original duration < 0.05sec * 10 = 0.5sec
     @Rule
-    public Timeout globalTimeout = Timeout.millis(500);
+    public Timeout globalTimeout = Timeout.millis(50);
 
     private void test(String in, boolean expected) {
         boolean out = FocusGame.isPiecePlacementWellFormed(in);

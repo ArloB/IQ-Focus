@@ -1,8 +1,9 @@
 package arlob.iqfocus;
 
-import arlob.iqfocus.gui.Orientation;
-import arlob.iqfocus.gui.Piece;
 import org.junit.Test;
+
+import arlob.iqfocus.classes.Orientation;
+import arlob.iqfocus.classes.Piece;
 
 import static org.junit.Assert.assertTrue;
 

@@ -1,4 +1,4 @@
-package arlob.iqfocus.gui;
+package arlob.iqfocus.classes;
 
 public class Objective {
     private String challengeString;

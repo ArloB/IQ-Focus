@@ -1,6 +1,6 @@
-package arlob.iqfocus.gui;
+package arlob.iqfocus.classes;
 
-import static arlob.iqfocus.gui.State.*;
+import static arlob.iqfocus.classes.State.*;
 
 public class States {
     public static State[][] states = new State[][]{

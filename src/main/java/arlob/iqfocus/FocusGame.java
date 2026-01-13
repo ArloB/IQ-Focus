@@ -1,13 +1,17 @@
 package arlob.iqfocus;
 
-import arlob.iqfocus.gui.Location;
-import arlob.iqfocus.gui.Orientation;
-import arlob.iqfocus.gui.Piece;
-import arlob.iqfocus.gui.State;
+import arlob.iqfocus.classes.Location;
+import arlob.iqfocus.classes.Orientation;
+import arlob.iqfocus.classes.Piece;
+import arlob.iqfocus.classes.State;
+import javafx.util.Pair;
+import arlob.iqfocus.classes.BoardState;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+ 
 
 /**
  * This class provides the text interface for the IQ Focus Game
@@ -54,21 +58,22 @@ public class FocusGame {
      * @return True if the placement is well-formed
      */
     public static boolean isPlacementStringWellFormed(String placement) {
-        if (placement.length() % 4 == 0 && placement.length() > 0 && placement.length() / 4 < 11) {
-            Set<Character> shapes = new HashSet<>();
+        int len = placement.length();
 
-            for (int i = 0; i < placement.length(); i += 4) {
-                String piece = placement.substring(i, i+4);
+        if (len == 0 || len > 40 || len % 4 != 0) {
+            return false;
+        }
 
-                if (! isPiecePlacementWellFormed(piece) || !shapes.add(piece.charAt(0))) {
-                    return false;
-                }
+        Set<Character> shapes = new HashSet<>();
+        for (int i = 0; i < len; i += 4) {
+            String piece = placement.substring(i, i + 4);
+
+            if (!isPiecePlacementWellFormed(piece) || !shapes.add(piece.charAt(0))) {
+                return false;
             }
-        
-            return true;
         }
         
-        return false;
+        return true;
     }
 
     /**
@@ -85,33 +90,30 @@ public class FocusGame {
      * @return True if the placement sequence is valid
      */
     public static boolean isPlacementStringValid(String placement) {
-        if(!isPlacementStringWellFormed(placement))
+        if (!isPlacementStringWellFormed(placement))
             return false;
-        
-        State[][] board = new State[9][5];
+
+        long occupied = 0L;
+        final long FORBIDDEN = (1L << (4*9 + 0)) | (1L << (4*9 + 8));
 
         for (int i = 0; i < placement.length(); i += 4) {
-            Piece piece = new Piece(placement.substring(i,i+4));
-            Location location = piece.getLocation();
+            Piece piece = new Piece(placement.substring(i, i + 4));
+            Location loc = piece.getLocation();
 
-            if (location.X + piece.getW() > 9 || location.Y + piece.getH() > 5 || location.X < 0 || location.Y < 0) {
+            if (loc.X < 0 || loc.Y < 0 || loc.X + piece.getW() > 9 || loc.Y + piece.getH() > 5) {
                 return false;
             }
 
             for (int y = 0; y < piece.getH(); y++) {
                 for (int x = 0; x < piece.getW(); x++) {
-                    int X = location.X + x;
-                    int Y = location.Y + y;
-                    State state = piece.getState(x, y);
-                    
-                    if (state != State.EMPTY && ((X == 0 && Y == 4) || (X == 8 && Y == 4))) {
-                        return false;
-                    }
+                    if (piece.getState(x, y) != State.EMPTY) {
+                        int pos = (loc.Y + y) * 9 + loc.X + x;
 
-                    if (board[X][Y] == null || board[X][Y] == State.EMPTY) {
-                        board[X][Y] = state;
-                    } else if (state != State.EMPTY) {
-                        return false;
+                        if ((FORBIDDEN & (1L << pos)) != 0 || (occupied & (1L << pos)) != 0) {
+                            return false;
+                        }
+
+                        occupied |= (1L << pos);
                     }
                 }
             }
@@ -146,59 +148,58 @@ public class FocusGame {
      * @return A set of viable piece placements, or null if there are none.
      */
     public static Set<String> getViablePiecePlacements(String placement, String challenge, int col, int row) {
-        Set<Character> unplacedShapes = new HashSet<>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'));
+        if (!placement.isEmpty() && !isPlacementStringValid(placement))
+            return null;
         
-        State[][] board = new State[9][5];
-        
-        for (int i = 0; i < placement.length(); i += 4) {
-            Piece piece = new Piece(placement.substring(i, i+4));
-            
-            unplacedShapes.remove(Character.toLowerCase(placement.charAt(i)));
+        BoardState boardState = new BoardState(placement);
 
-            for (int y = 0; y < piece.getH(); y++) {
-                for (int x = 0; x < piece.getW(); x++) {
-                    board[piece.getLocation().X + x][piece.getLocation().Y + y] = piece.getState(x, y);
-                }
-            }
-        }
+        // If target cell already covered, nothing new can cover it
+        if (boardState.isCellOccupied(col, row)) return null;
 
         Set<String> viablePlacements = new HashSet<>();
 
-        for (char shape : unplacedShapes) {
+        for (char shape : boardState.getUnplacedShapes()) {
             for (Orientation orientation : Orientation.values()) {
                 Piece piece = new Piece(shape, col, row, orientation);
                 int h = piece.getH(), w = piece.getW();
 
-                for (int i = Math.max(row - h, 0); i <= Math.min(row + h, 4); i++) {
-                    for (int j = Math.max(col - h, 0); j <= Math.min(col + w, 8); j++) {
-                        if ((j == 0 && i == 4) || (j == 8 && i == 4) || j + w > 9 || i + h > 5 || j < 0 || i < 0 || !isPiecePlacementWellFormed(piece.toString())) continue;
+                int minRow = Math.max(0, row - (h - 1));
+                int maxRow = Math.min(row, 5 - h);
+                int minCol = Math.max(0, col - (w - 1));
+                int maxCol = Math.min(col, 9 - w);
 
-                        if ((j + w > 2 || j - w < 6) && (i + h > 0 || i - h < 4)) {
-                            boolean covers = false, valid = true;
-                            
-                            piece.setLocation(j, i);
+                for (int i = minRow; i <= maxRow; i++) {
+                    for (int j = minCol; j <= maxCol; j++) {
+                        if ((j == 0 && i == 4) || (j == 8 && i == 4)) continue;
 
-                            for (int y = 0; y < h; y++) {
-                                for (int x = 0; x < w; x++) {
-                                    char colour = piece.getState(x, y).toChar();
+                        boolean covers = false, valid = true;
+                        
+                        piece.setLocation(j, i);
 
-                                    int X = j + x, Y = i + y;
+                        for (int y = 0; y < h && valid; y++) {
+                            for (int x = 0; x < w; x++) {
+                                State cell = piece.getState(x, y);
+                                if (cell == State.EMPTY) continue;
 
-                                    if (colour == 'E') continue;
+                                int X = j + x, Y = i + y;
 
-                                    covers |= (X == col && Y == row);
+                                covers |= (X == col && Y == row);
 
-                                    if ((board[X][Y] != null && board[X][Y] != State.EMPTY) || (X == 0 && Y == 4) || (X == 8 && Y == 4) || ((X > 2 && X < 6 && Y > 0 && Y < 4) && (challenge.charAt((X - 3) + (Y - 1) * 3) != colour))) {
+                                if (boardState.isCellOccupied(X, Y) ||
+                                        (X == 0 && Y == 4) || (X == 8 && Y == 4)) {
+                                    valid = false; break;
+                                }
+
+                                if (X > 2 && X < 6 && Y > 0 && Y < 4) {
+                                    if (challenge.charAt((X - 3) + (Y - 1) * 3) != cell.toChar()) {
                                         valid = false; break;
                                     }
                                 }
+                            }
+                        }
 
-                                if (!valid) break;
-                            }
-                        
-                            if (covers && valid) {
-                                viablePlacements.add(piece.toString());
-                            }
+                        if (covers && valid) {
+                            viablePlacements.add(piece.toString());
                         }
                     }
                 }
@@ -224,9 +225,76 @@ public class FocusGame {
      * @return A placement string describing a canonical encoding of the solution to
      * the challenge.
      */
-    public static String getSolution(String challenge) {
+    public static String getSolution(String challenge) {   
+        BoardState boardState = new BoardState();
+        
+        String solution = findSolution("", challenge, boardState);
+        
+        if (solution != null) {
+            String pieces = "";
 
+            for (int i = 0; i < solution.length(); i += 4) {
+                String piece = solution.substring(i, i + 4);
+                char pieceType = piece.charAt(0);
 
+                if (pieceType == 'f' || pieceType == 'g') {
+                    char rotation = piece.charAt(3);
+                    if (rotation == '2') {
+                        piece = piece.substring(0, 3) + '0';
+                    } else if (rotation == '3') {
+                        piece = piece.substring(0, 3) + '1';
+                    }
+                }
+
+                pieces += piece;
+            }
+            
+            return pieces;
+        }
+        
         return "";
+    }
+    
+    /**
+     * Recursive backtracking method to find a solution for the given challenge
+     * 
+     * @param placement Current placement string
+     * @param challenge The challenge string
+     * @return A valid placement string that solves the challenge, or null if no solution exists
+     */
+    private static String findSolution(String placement, String challenge, BoardState boardState) {
+        if (placement.length() == 40) {
+            return placement;
+        }
+        
+        List<Pair<Integer, Integer>> emptyCells = boardState.getEmptyCellsByPriority();
+    
+        for (Pair<Integer, Integer> cell : emptyCells) {
+            int col = cell.getKey();
+            int row = cell.getValue();
+                
+            if (!boardState.isCellOccupied(col, row)) {
+                Set<String> viablePlacements = getViablePiecePlacements(placement, challenge, col, row);
+                
+                if (viablePlacements != null) {
+                    for (String piecePlacement : viablePlacements) {
+                        BoardState newBoardState = boardState.copy();
+
+                        newBoardState.placePiece(piecePlacement);
+
+                        String newPlacement = placement + piecePlacement;
+                        String result = findSolution(newPlacement, challenge, newBoardState);
+                        
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+        }
+
+        return null;
     }
 }
