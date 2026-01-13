@@ -11,9 +11,8 @@ import static arlob.iqfocus.TestUtility.*;
 import static org.junit.Assert.assertTrue;
 
 public class ViablePlacementsTest {
-    // Original duration < 0.05 sec * 10 = 0.5 sec
     @Rule
-    public Timeout globalTimeout = Timeout.millis(500);
+    public Timeout globalTimeout = Timeout.millis(50);
 
     private void test(String start, String objective, int xLoc, int yLoc, Set<String> expected) {
         Set<String> outSet = FocusGame.getViablePiecePlacements(start, objective, xLoc, yLoc);

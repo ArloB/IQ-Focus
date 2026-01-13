@@ -2,6 +2,8 @@ package arlob.iqfocus.gui;
 
 import arlob.iqfocus.FocusGame;
 import arlob.iqfocus.Solution;
+import arlob.iqfocus.classes.BoardState;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -46,6 +48,8 @@ public class Board extends Application {
     private static final char OFF_BOARD = 32;
 
     private PlaceString ps = new PlaceString();
+
+    private BoardState state = new BoardState();
 
     String objective;
     String solution;
@@ -370,7 +374,7 @@ public class Board extends Application {
 
 
     private void getChallenge() {
-        /* Retrieves challange from solution file */
+        /* Retrieves challenge from solution file */
         objective = Solution.SOLUTIONS[new Random().nextInt(Solution.SOLUTIONS.length)].objective;
         solution = Solution.SOLUTIONS[new Random().nextInt(Solution.SOLUTIONS.length)].placement;
     }

@@ -9,9 +9,8 @@ import static arlob.iqfocus.TestUtility.*;
 import static org.junit.Assert.assertTrue;
 
 public class PlacementStringValidTest {
-    // original duration < 0.15 sec -> 1 sec
     @Rule
-    public Timeout globalTimeout = Timeout.millis(1000);
+    public Timeout globalTimeout = Timeout.millis(150);
 
     private void test(String in, String invalid, boolean expected) {
         boolean out = FocusGame.isPlacementStringValid(in);

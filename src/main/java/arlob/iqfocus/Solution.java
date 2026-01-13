@@ -6,7 +6,7 @@ import java.util.Set;
 public class Solution {
   public String objective;
   public String placement;
-  Set<String> placements;
+  public Set<String> placements;
 
   Solution(String iObjective, String p1, String p2, String p3, String p4) {
     objective = iObjective;

@@ -1,4 +1,4 @@
-package arlob.iqfocus.gui;
+package arlob.iqfocus.classes;
 
 public class Piece {
     private PieceType pieceType;
@@ -88,7 +88,7 @@ public class Piece {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(Character.toLowerCase(pieceType.toChar()));
+        sb.append(pieceType.toChar());
         sb.append(location.X);
         sb.append(location.Y);
         sb.append(orientation.toChar());

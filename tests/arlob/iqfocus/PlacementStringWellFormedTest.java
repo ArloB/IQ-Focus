@@ -10,9 +10,8 @@ import static org.junit.Assert.assertTrue;
 
 
 public class PlacementStringWellFormedTest {
-    // original duration < 0.05 sec -> 0.5 sec
     @Rule
-    public Timeout globalTimeout = Timeout.millis(500);
+    public Timeout globalTimeout = Timeout.millis(50);
 
     private void test(String in, boolean expected) {
         boolean out = FocusGame.isPlacementStringWellFormed(in);
